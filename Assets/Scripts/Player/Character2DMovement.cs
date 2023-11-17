@@ -50,6 +50,7 @@ public class Character2DMovement : MonoBehaviour
 	private float mFallTimeoutDelta;
 
 	private bool mHeadingRight;
+	private bool mDirectionChanged;
 	
 	private Character2DController mController;
 	private CharacterSelector mSelector;
@@ -89,7 +90,7 @@ public class Character2DMovement : MonoBehaviour
     /// </summary>
     void FixedUpdate ()
     {
-	    MoveHorizontal();
+        MoveHorizontal();
 	    JumpAndGravity();
 	    AnimateCharacter();
 	    
@@ -187,7 +188,7 @@ public class Character2DMovement : MonoBehaviour
     /// </summary>
     void AnimateCharacter()
     {
-	    /*
+        /*
 	     * Task #1a: Orienting the character
 	     *
 	     * Let us start by at least orienting the character, making him face the
@@ -212,8 +213,32 @@ public class Character2DMovement : MonoBehaviour
 	     *   * Persistent heading flag: *mHeadingRight*
 	     *   * Rotating a local rotation by an axis: localRotation *= Quaternion.Euler(...)
 	     */
-	    
-	    var animator = mSelector.charAnimator;
+
+        if (mInput.move.x > 0)
+		{
+			if (!mHeadingRight)
+				mDirectionChanged = true;
+            mHeadingRight = true;
+		}
+		else if(mInput.move.x < 0)
+		{
+			if (mHeadingRight)
+				mDirectionChanged = true;
+            mHeadingRight = false;
+		}
+		else
+		{
+			mDirectionChanged = false;
+		}
+
+        if (mDirectionChanged)
+		{
+            transform.localRotation *= Quaternion.Euler(0.0f, 180.0f, 0.0f);
+			mDirectionChanged = false;
+        }
+
+
+        var animator = mSelector.charAnimator;
 	    if (animator != null)
 	    {
 			var currentVerticalSpeed = mController.velocity.y;
@@ -265,6 +290,13 @@ public class Character2DMovement : MonoBehaviour
 			 *   * Current Animator instance: *animator*
 			 *   * Animator methods: *SetFloat* and *SetBool*
 			 */
-	    }
+			animator.SetFloat("Speed", speed);
+            animator.SetFloat("MoveSpeed", moveSpeed);
+            animator.SetBool("Jump", jump);
+            animator.SetBool("Grounded", grounded);
+            animator.SetBool("Fall", falling);
+            animator.SetBool("Crouch", crouch);
+
+        }
     }
 }
